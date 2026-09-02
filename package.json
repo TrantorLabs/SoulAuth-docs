@@ -1,0 +1,29 @@
+{
+  "name": "soulauth-docs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Documentation site for SoulAuth — an authentication service in Rust.",
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev docs",
+    "build": "vitepress build docs",
+    "preview": "vitepress preview docs",
+    "check:endpoints": "node scripts/check-endpoints.mjs",
+    "check:anchors": "node scripts/check-anchors.mjs",
+    "verify": "npm run build && npm run check:anchors && npm run check:endpoints && npm run check:figures && npm run check:status && npm run check:contracts && npm run check:citations && npm run check:zh-style && npm run check:coverage && npm run check:locale",
+    "check:figures": "node scripts/check-figures.mjs",
+    "check:status": "node scripts/check-status.mjs",
+    "check:contracts": "node scripts/check-contracts.mjs",
+    "sync:contracts": "python3 scripts/sync-contracts.py",
+    "check:citations": "node scripts/check-citations.mjs",
+    "check:zh-style": "node scripts/check-zh-style.mjs",
+    "check:locale": "node scripts/check-locale.mjs",
+    "check:coverage": "node scripts/check-coverage.mjs"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.4"
+  },
+  "engines": {
+    "node": ">=22.18"
+  }
+}

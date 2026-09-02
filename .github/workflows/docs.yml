@@ -1,0 +1,100 @@
+name: docs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# GitHub Pages 部署所需的最小权限集。
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同时只跑一个部署；排队而不是取消进行中的那个，
+# 免得一次 push 把上一次已经部署到一半的产物留在中间状态。
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # lastUpdated 需要完整历史，否则每页的「最后更新」都是同一个时间。
+          fetch-depth: 0
+
+      # Node 22.18+ / 24 才默认支持不带 flag 的 TypeScript 类型剥离。
+      #
+      # `scripts/check-figures.mjs` 直接 import `strings.ts` —— 那是刻意的：
+      # 逐字段递归比对中英结构，靠文本正则做不到。但它把 Node 版本变成了硬依赖，
+      # 而这条依赖曾经**静默地**让整个站点停止部署：CI 上是 node 20，
+      # `import ... from '.ts'` 直接抛错，build job 失败，deploy 因为
+      # `needs: build` 而从不执行 —— 线上停在旧版，而没有任何页面会告诉你。
+      #
+      # 版本同时写在 package.json 的 engines 里，本地与 CI 不再各说各话。
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # 不设 DOCS_BASE：站点部署在自定义域名 soulauth.trantorlabs.sg 上，
+      # 从根路径提供，`config.mts` 里的默认 base `/` 就是对的。
+      #
+      # 这里曾经是 `DOCS_BASE: /${{ github.event.repository.name }}/`
+      # —— 项目页时代从仓库名推导 base。挂上自定义域名之后那个值让每个资源
+      # 都指向 `/SoulAuth-docs/...`：页面打得开、样式全丢、点任何链接都 404，
+      # 而构建依然是绿的。
+      #
+      # 自定义域名靠 `docs/public/CNAME` 保持：VitePress 把 public/ 原样复制进
+      # dist，产物里带着 CNAME，每次部署都会重新声明域名。少了它，
+      # Pages 有可能在某次部署后把自定义域名清掉。
+      - name: Build
+        run: npm run build
+
+      - run: npm run check:anchors
+      # 文档不得复述端点/路由计数 —— 那份事实归 contracts/openapi.yaml，
+      # 由 SoulAuth 仓库的 tests/conformance.rs::j4 守卫。
+      - run: npm run check:endpoints
+      # 三张 Canonical Figure：文件在不在、中英文有没有串。
+      # 这两类错都不会让构建变红，只会让读者看到坏图或另一种语言。
+      - run: npm run check:figures
+      - run: npm run check:status
+      # 契约快照：齐不齐、是不是从干净工作区取的、页面有没有写出来源 commit。
+      - run: npm run check:contracts
+      # 散文里提到的端点/配置项/权限名必须真实存在。
+      - run: npm run check:citations
+      # 中文页的写作约定（破折号预算、引号、术语），见 STYLE.zh.md。
+      - run: npm run check:zh-style
+      # 语言纯度：扫构建产物，抓「中文漏进英文页」这类只在渲染结果里可见的缺陷。
+      - run: npm run check:locale
+
+      # enablement: true 让 workflow 自己开启 Pages。
+      # 不加的话，仓库没在 Settings → Pages 里把 Source 选成 GitHub Actions 时，
+      # 这一步会以 "Get Pages site failed" 失败 —— 而失败原因在构建日志里，
+      # 不在你会去看的那个页面上。
+      - uses: actions/configure-pages@v5
+        if: github.ref == 'refs/heads/main'
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: docs/.vitepress/dist
+
+  deploy:
+    # PR 只构建校验，不部署。
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

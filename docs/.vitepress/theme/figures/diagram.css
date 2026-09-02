@@ -1,0 +1,415 @@
+/* ── Canonical Figure 图元 ────────────────────────────────────────────
+   三张公共核心图用 HTML + CSS 画，不用位图，理由有三条：
+
+   1. Figure 2 缺 IdentityBinding、Figure 1 中文版比英文版少三条注释 ——
+      位图这两处都改不动。改成组件以后，两个语言版本由同一份结构生成，
+      只有字符串不同，"某个语言版本更薄"结构上不可能再发生。
+   2. 1568px 宽的位图在手机上没法读。这里的盒子会随容器换行。
+   3. 图里的文字可被搜索、可被选中、可被读屏软件读出来。
+
+   配色是有语义的，不要随手换：蓝=身份与认证主链路，紫=Control Plane，
+   红=Security Protection，橙=Audit & Attribution，绿=对外输出的已认证事实。 */
+
+.dg {
+  --dg-ink: #1f2733;
+  --dg-ink-2: #5b6472;
+  --dg-blue: #2952cc;
+  --dg-blue-bg: #eef3fd;
+  --dg-blue-line: #c3d4f5;
+  --dg-accent-bg: #1e40af;
+  --dg-purple: #6d28d9;
+  --dg-purple-bg: #f4efFd;
+  --dg-purple-line: #ddd0f7;
+  --dg-red: #c0392b;
+  --dg-red-bg: #fdeeec;
+  --dg-red-line: #f5c6c0;
+  --dg-amber: #b45309;
+  --dg-amber-bg: #fef6e7;
+  --dg-amber-line: #f3d9a4;
+  --dg-green: #15803d;
+  --dg-green-bg: #eaf7ee;
+  --dg-green-line: #b7e0c4;
+
+  /* 按图自身宽度响应，而不是视口 —— 图被限制在正文栏里，
+     视口宽不代表图宽。 */
+  container-type: inline-size;
+
+  /* 宽度限制加在外层 figure.figure 上，不加在这里 —— 加在这里只会让图居中，
+     figcaption 仍然占满整个正文栏，两者左边缘对不齐。见 custom.css。 */
+
+  /* 兜底：.dg-row 是不换行的 flex，盒子压到 min-content 之后再窄就会溢出。
+     正常情况下 560px 装得下最宽那一行（ActorIdentity → IdentityBinding →
+     Soulseed Canonical Actor，约 390px），但标签一旦变长就没有余量了。
+     宽内容自己滚，不要顶破正文栏。 */
+  overflow-x: auto;
+
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--dg-ink);
+  /* 图内不继承正文字体的行距设置 */
+  font-family: var(--vp-font-family-base);
+}
+
+/* 正文排版不要渗进图里 */
+.dg p, .dg ul, .dg li { margin: 0; line-height: 1.5; }
+.dg :where(b, code) { line-height: 1.4; }
+
+/* ── 盒子 ─────────────────────────────────────────────────────────── */
+.dg-box {
+  flex: 1 1 auto;
+  /* min-content 而不是 0：盒子永不窄于自身最长的那个词，
+     所以 HumanAccount / IdentityBinding 这类标识符不会被折断。
+     下面的 overflow-wrap 只作最后兜底。 */
+  min-width: min-content;
+  padding: 9px 9px;
+  border: 1px solid var(--dg-blue-line);
+  border-radius: 8px;
+  background: var(--dg-blue-bg);
+  text-align: center;
+}
+.dg-box > b {
+  display: block;
+  color: var(--dg-blue);
+  font-weight: 600;
+  font-size: 13px;
+  /* break-word 而不是 anywhere：anywhere 会把 min-content 算成单个字符宽，
+     正好抵消上面的 min-width: min-content，导致 HumanAccount 仍被折断。
+     break-word 不影响 min-content，只在真的放不下时才断词。 */
+  overflow-wrap: break-word;
+}
+.dg-box > span {
+  display: block;
+  overflow-wrap: break-word;
+  margin-top: 2px;
+  color: var(--dg-ink-2);
+  font-size: 12px;
+}
+.dg-box > em {
+  display: block;
+  margin-top: 3px;
+  color: var(--dg-ink-2);
+  font-size: 11.5px;
+  font-style: normal;
+  opacity: 0.85;
+}
+
+/* 身份根：整张图里唯一的实心块 */
+.dg-box--accent {
+  border-color: var(--dg-accent-bg);
+  background: var(--dg-accent-bg);
+}
+.dg-box--accent > b { color: #fff; font-size: 14.5px; }
+.dg-box--accent > span,
+.dg-box--accent > em { color: rgba(255, 255, 255, 0.85); }
+
+.dg-box--plain { background: #fff; }
+.dg-box--green { background: var(--dg-green-bg); border-color: var(--dg-green-line); }
+.dg-box--green > b { color: var(--dg-green); }
+.dg-box--amber { background: var(--dg-amber-bg); border-color: var(--dg-amber-line); }
+.dg-box--amber > b { color: var(--dg-amber); }
+.dg-box--dashed { border-style: dashed; background: #fff; }
+
+/* ── 排布 ─────────────────────────────────────────────────────────── */
+.dg-row { display: flex; gap: 10px; align-items: stretch; }
+.dg-row--center { align-items: center; }
+.dg-col { display: flex; flex-direction: column; gap: 10px; flex: 1 1 auto; min-width: 0; }
+.dg-narrow { flex: 0 1 auto; }
+
+/* 分组容器：Mind OS / SoulAuth Core / Identity Domain */
+.dg-group {
+  border: 1px solid var(--dg-blue-line);
+  border-radius: 10px;
+  padding: 12px;
+  background: rgba(238, 243, 253, 0.45);
+}
+.dg-group > header {
+  margin-bottom: 10px;
+  text-align: center;
+}
+.dg-group > header > b {
+  color: var(--dg-blue);
+  font-weight: 700;
+  font-size: 14px;
+}
+.dg-group > header > span {
+  display: block;
+  color: var(--dg-ink-2);
+  font-size: 11.5px;
+}
+
+/* ── 连接线 ───────────────────────────────────────────────────────── */
+.dg-down, .dg-updown {
+  position: relative;
+  height: 26px;
+  flex: 0 0 auto;
+}
+.dg-down::before, .dg-updown::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  border-left: 1.5px solid var(--dg-blue-line);
+}
+.dg-down::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--dg-blue);
+  border-bottom: 0;
+}
+/* 双向：上下各一个箭头 */
+.dg-updown::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--dg-blue);
+  border-bottom: 0;
+}
+.dg-updown > i {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-bottom-color: var(--dg-blue);
+  border-top: 0;
+}
+.dg-down > label, .dg-updown > label {
+  position: absolute;
+  left: calc(50% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  color: var(--dg-blue);
+  font-size: 11.5px;
+}
+
+/* 横向连接（双向） */
+.dg-side {
+  position: relative;
+  flex: 0 0 46px;
+  align-self: center;
+  height: 20px;
+}
+.dg-side::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 6px;
+  right: 6px;
+  border-top: 1.5px solid var(--dg-blue-line);
+}
+.dg-side::after, .dg-side > i {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+}
+.dg-side::after { right: 0; border-left-color: var(--dg-blue); border-right: 0; }
+.dg-side > i { left: 0; border-right-color: var(--dg-blue); border-left: 0; }
+.dg-side--dashed::before { border-top-style: dashed; }
+.dg-side--one > i { display: none; }
+.dg-side > label {
+  position: absolute;
+  left: 50%;
+  bottom: calc(50% + 8px);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  color: var(--dg-blue);
+  font-size: 11px;
+}
+
+/* ── 横切平面（Control / Security / Audit） ───────────────────────── */
+.dg-plane {
+  border: 1px solid var(--dg-blue-line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--dg-blue-bg);
+}
+.dg-plane > b { display: block; font-weight: 700; font-size: 13px; margin-bottom: 7px; }
+.dg-plane > ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 10px;
+}
+.dg-plane > ul > li { font-size: 11.5px; color: var(--dg-ink-2); }
+.dg-plane > ul > li > b { color: var(--dg-ink); font-weight: 600; }
+.dg-plane--purple { background: var(--dg-purple-bg); border-color: var(--dg-purple-line); }
+.dg-plane--purple > b { color: var(--dg-purple); }
+.dg-plane--red { background: var(--dg-red-bg); border-color: var(--dg-red-line); }
+.dg-plane--red > b { color: var(--dg-red); }
+.dg-plane--amber { background: var(--dg-amber-bg); border-color: var(--dg-amber-line); }
+.dg-plane--amber > b { color: var(--dg-amber); }
+
+/* ── 不变量条（ActorIdentity ≠ …） ───────────────────────────────── */
+.dg-neq {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 4px;
+}
+.dg-neq > code {
+  padding: 3px 9px;
+  border: 1px dashed var(--dg-blue-line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--dg-ink-2);
+  font-size: 11.5px;
+}
+
+/* ── 底部编号注释 ─────────────────────────────────────────────────── */
+.dg-notes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px 20px;
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--dg-blue-line);
+}
+.dg-notes > div > b {
+  display: block;
+  color: var(--dg-blue);
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+.dg-notes > div > b::before {
+  content: attr(data-n);
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--dg-blue);
+  color: #fff;
+  font-size: 10.5px;
+  vertical-align: 1px;
+}
+.dg-notes > div > p {
+  /* .vp-doc p 会带来 16px 外边距和 28px 行高，图里都太松 */
+  margin: 0;
+  color: var(--dg-ink-2);
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+/* ── 窄屏 ─────────────────────────────────────────────────────────── */
+@media (max-width: 520px) {
+  /* 竖排时主轴变成纵向，flex-basis 会被当成高度 —— 必须复位，
+     否则每个盒子都被撑到 150px 高 */
+  .dg-box { flex: 0 0 auto; }
+  .dg { font-size: 12px; }
+  .dg-row { flex-direction: column; }
+  /* 竖排以后横向连接线要转成竖向，否则会是一段悬空的横线 */
+  .dg-side {
+    flex: 0 0 22px;
+    width: 100%;
+    height: 22px;
+  }
+  .dg-side::before {
+    top: 2px; bottom: 2px; left: 50%; right: auto;
+    border-top: 0; border-left: 1.5px solid var(--dg-blue-line);
+  }
+  .dg-side::after {
+    top: auto; right: auto; bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    border-left-color: transparent; border-top-color: var(--dg-blue); border-bottom: 0;
+  }
+  .dg-side > i {
+    top: 0; left: 50%; transform: translateX(-50%);
+    border-right-color: transparent; border-bottom-color: var(--dg-blue); border-top: 0;
+  }
+  .dg-side > label { position: static; display: none; }
+}
+
+/* 承托底：图本身是浅色的，深色模式下直接铺在深色页面上会刺眼。
+   不反相 —— 反相会毁掉语义配色。 */
+.dg-plate {
+  padding: 16px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+  background: #fbfcfe;
+}
+.dark .dg-plate { background: #f4f6fa; }
+
+/* 图内的补充说明（比 note 更短，跟在某条关系下面） */
+.dg-aside {
+  margin: -2px 0 0;
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--dg-ink-2);
+  font-style: italic;
+}
+
+/* 并列列里的盒子不要被拉到与邻列等高 */
+.dg-col--center { justify-content: center; }
+.dg-fixed { flex: 0 0 auto; }
+
+/* 容器（不是视口）变窄时，横向关系转成竖向，连接线跟着转 90 度 */
+@container (max-width: 480px) {
+  /* 竖排时主轴变成纵向，flex-basis 会被当成高度 —— 必须复位，
+     否则每个盒子都被撑到 150px 高 */
+  .dg-box { flex: 0 0 auto; }
+  .dg { font-size: 12px; }
+  .dg-row { flex-direction: column; }
+  /* 竖排以后横向连接线要转成竖向，否则会是一段悬空的横线 */
+  .dg-side {
+    flex: 0 0 22px;
+    width: 100%;
+    height: 22px;
+  }
+  .dg-side::before {
+    top: 2px; bottom: 2px; left: 50%; right: auto;
+    border-top: 0; border-left: 1.5px solid var(--dg-blue-line);
+  }
+  .dg-side::after {
+    top: auto; right: auto; bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    border-left-color: transparent; border-top-color: var(--dg-blue); border-bottom: 0;
+  }
+  .dg-side > i {
+    top: 0; left: 50%; transform: translateX(-50%);
+    border-right-color: transparent; border-bottom-color: var(--dg-blue); border-top: 0;
+  }
+  .dg-side > label { position: static; display: none; }
+}
+
+/* 承托底：图本身是浅色的，深色模式下直接铺在深色页面上会刺眼。
+   不反相 —— 反相会毁掉语义配色。 */
+.dg-plate {
+  padding: 16px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+  background: #fbfcfe;
+}
+.dark .dg-plate { background: #f4f6fa; }
+
+/* 图内的补充说明（比 note 更短，跟在某条关系下面） */
+.dg-aside {
+  margin: -2px 0 0;
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--dg-ink-2);
+  font-style: italic;
+}
+
+/* 并列列里的盒子不要被拉到与邻列等高 */
+.dg-col--center { justify-content: center; }
+.dg-fixed { flex: 0 0 auto; }
+
+/* 有连接线的行不参与换行 —— 换行会让线悬空 */
+.dg-row--center { flex-wrap: nowrap; }
+@container (max-width: 480px) { .dg-row--center { flex-wrap: wrap; } }

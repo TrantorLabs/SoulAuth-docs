@@ -1,0 +1,90 @@
+/* SoulAuth 品牌色。只覆盖变量，不改结构 —— 默认主题的可访问性对比度是调过的，
+   自己重写组件样式很容易把深色模式下的对比度弄坏。 */
+:root {
+  --vp-c-brand-1: #4c5fd7;
+  --vp-c-brand-2: #5b6fe8;
+  --vp-c-brand-3: #7183f0;
+  --vp-c-brand-soft: rgba(91, 111, 232, 0.14);
+
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(120deg, #7f9cff 30%, #4c5fd7);
+  --vp-home-hero-image-background-image: linear-gradient(-45deg, #7f9cff 50%, #4c5fd7 50%);
+  --vp-home-hero-image-filter: blur(48px);
+}
+
+.dark {
+  --vp-c-brand-1: #8fa2ff;
+  --vp-c-brand-2: #7f93ff;
+  --vp-c-brand-3: #6b80f5;
+  --vp-c-brand-soft: rgba(143, 162, 255, 0.16);
+}
+
+/* 宽表格（端点清单、环境变量表）在窄屏上自己横向滚动，
+   而不是把整个页面撑出横向滚动条。 */
+.vp-doc div[class*='language-'],
+.vp-doc table {
+  overflow-x: auto;
+}
+
+/* ── Canonical Figures ────────────────────────────────────────────────
+   语料只承认三张 Public Core Figure：Figure 1 (WHERE) / Figure 2 (WHO) /
+   Figure 3 (HOW)。它们是浅底插图，深色模式下直接铺在深色页面上会刺眼，
+   所以始终给一块近白的承托底，让它读起来像"一张图"而不是"漏了背景的图"。 */
+.vp-doc figure.figure {
+  /* 占满正文栏。
+     560px 那个上限是给组件版（紧凑的 flex 图）调的：那时图占满整栏会被横向
+     拉扁，读起来像表格。换成位图之后情况反过来了 —— 原图宽 1600–2000px，
+     缩到 560px 里小字只剩四五个像素。
+     真正读得清要靠点开原图（组件把图包在 <a> 里），页内这一版负责结构与位置。 */
+  max-width: 100%;
+  margin: 2rem auto;
+}
+
+/* 图本身可点开看原图，光标提示这件事。图注里不再另放一个按钮 ——
+   图可点已经足够，多一个链接只是重复。 */
+.vp-doc figure.figure a:has(img) {
+  cursor: zoom-in;
+}
+
+.vp-doc figure.figure a {
+  display: block;
+  padding: 12px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+  background: #fbfcfe;
+  transition: border-color 0.2s;
+}
+
+.vp-doc figure.figure a:hover {
+  border-color: var(--vp-c-brand-1);
+}
+
+.dark .vp-doc figure.figure a {
+  /* 深色模式不反相图片 —— 反相会毁掉图里的语义配色
+     （蓝=身份链路，橙=Audit，红=Security）。只压一点亮度减少眩光。 */
+  background: #eef1f6;
+  filter: brightness(0.94);
+}
+
+.vp-doc figure.figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.vp-doc figure.figure figcaption {
+  margin-top: 0.75rem;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--vp-c-text-2);
+}
+
+.vp-doc figure.figure figcaption strong {
+  color: var(--vp-c-text-1);
+}
+
+/* 这里曾经有一条相反的规则：让图用负边距探出正文栏两侧（大屏 -120px、
+   中屏 -56px），理由是 688px 放不下、HumanAccount 会被折成 HumanA / ccount。
+   实际效果是图比正文还宽，读起来喧宾夺主。折断问题已由 .dg-box 的
+   min-width: min-content 解决（见 figures/diagram.css），不需要靠加宽来避。 */

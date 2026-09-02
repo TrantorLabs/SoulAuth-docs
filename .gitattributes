@@ -1,0 +1,13 @@
+# 行尾一律 LF。见 SoulAuth 仓库同名文件：脚本被检出成 CRLF 时的报错
+# 完全不指向行尾，排查代价远高于加这一行。
+* text=auto eol=lf
+
+*.mjs  text eol=lf
+*.ts   text eol=lf
+*.vue  text eol=lf
+*.md   text eol=lf
+
+# 从 SoulAuth 同步下来的契约快照，由 scripts/sync-contracts.py 写入。
+# 手改它等于让站点与来源 commit 脱钩，check:contracts 会当场发现。
+docs/.vitepress/data/contracts/** linguist-generated=true
+package-lock.json                 linguist-generated=true
