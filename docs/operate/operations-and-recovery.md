@@ -30,11 +30,14 @@ you keep secrets, and test that you can actually get them back.
 Rotating it invalidates every session — everyone is logged out. That is the expected
 cost, not a failure.
 
-::: danger Rotate the MFA key first, or not at all
-If `MFA_SECRET_ENCRYPTION_KEY` was never set explicitly, the MFA key is **derived from
-`JWT_SECRET`**. Rotating `JWT_SECRET` then locks out every MFA user permanently — their
-stored TOTP secrets can no longer be decrypted, and there is no recovery beyond having
-them re-enrol.
+::: tip The MFA key is independent of this one
+`MFA_SECRET_ENCRYPTION_KEY` is its own key and is never derived from `JWT_SECRET`, so
+rotating `JWT_SECRET` does not touch stored TOTP secrets.
+<Status kind="tested" guard="conformance::b5" />
+
+Rotating `MFA_SECRET_ENCRYPTION_KEY` itself is the destructive one: the secrets already
+in the database were sealed with the old key, and there is no recovery beyond having
+enrolled users re-enrol.
 
 Set a dedicated `MFA_SECRET_ENCRYPTION_KEY` before you ever touch `JWT_SECRET`.
 A non-loopback `APP_URL` already makes it required, which is what the gate is there for.
@@ -114,8 +117,8 @@ out.
 **The database.** Sessions, access tokens, refresh tokens, authorization codes, reset and
 verification tokens are all stored as SHA-256 fingerprints, so a database read yields no
 usable credential. <Status kind="tested" guard="conformance::b4b" /> Passwords are
-Argon2. TOTP secrets are encrypted — with a key that, if you never set one explicitly,
-derives from `JWT_SECRET`.
+Argon2. TOTP secrets are encrypted with a dedicated key that is never derived from any
+other secret.
 
 ## Cleanup
 

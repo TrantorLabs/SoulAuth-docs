@@ -15,11 +15,12 @@ private keys. <Status kind="tested" guard="conformance::b4b" />
 They can, given time: crack weak passwords offline. Argon2 makes that expensive, not
 impossible — password policy still matters.
 
-::: warning Unless they also have `JWT_SECRET`
-TOTP secrets are encrypted with `MFA_SECRET_ENCRYPTION_KEY`. If that was never set
-explicitly, it **derives from `JWT_SECRET`** — so a database dump plus the environment
-file yields working TOTP codes. A non-loopback `APP_URL` forces a dedicated key for
-exactly this reason.
+::: warning Unless they also have `MFA_SECRET_ENCRYPTION_KEY`
+TOTP secrets are encrypted with that key, which lives outside the database and is never
+derived from `JWT_SECRET`. <Status kind="tested" guard="conformance::b5" /> A database
+dump on its own yields no working TOTP codes; a dump **plus** the environment file does,
+which is why the key belongs in a secret manager rather than in the same place as the
+backups.
 :::
 
 ## Stolen session token

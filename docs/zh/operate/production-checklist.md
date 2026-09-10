@@ -24,8 +24,8 @@ openssl rand -hex 32
 openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out oidc-signing.pem
 export OIDC_RSA_PRIVATE_KEY_PATH=/etc/soulauth/oidc-signing.pem
 
-# 专用的 MFA 密钥——否则它从 JWT_SECRET 派生，这意味着轮换 JWT_SECRET
-# 会把每个 MFA 用户永久锁在门外。
+# 专用的 MFA 密钥——不配 MFA 直接返回 503；它从不从 JWT_SECRET 派生，
+# 两把钥匙各自独立轮换。
 export MFA_SECRET_ENCRYPTION_KEY=$(openssl rand -base64 32)
 export AUDIT_INTEGRITY_KEY=$(openssl rand -base64 32)
 ```

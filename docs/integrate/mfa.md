@@ -81,12 +81,15 @@ stolen session token is therefore not enough to strip the second factor off an a
 
 ## Operational requirement
 
-TOTP secrets are encrypted at rest with `MFA_SECRET_ENCRYPTION_KEY`. If you do not set
-it, the key is derived from `JWT_SECRET` and the server warns at startup — and rotating
-`JWT_SECRET` will then make every stored secret undecryptable, locking out every enrolled
-user at once. Set it explicitly before anyone enrols. The warning is emitted by
-`src/utils/crypto.rs`; there is no automated test asserting it, so this paragraph carries
-no badge.
+TOTP secrets are encrypted at rest with `MFA_SECRET_ENCRYPTION_KEY`, and **MFA does not
+work without it** — every MFA endpoint returns 503 until the key is set, and the message
+says which variable is missing. <Status kind="tested" guard="conformance::b5" />
+
+No key is derived from any other secret. Deriving one from `JWT_SECRET` would let the
+service start and let people enrol, and then the day `JWT_SECRET` was rotated every
+stored secret would become undecryptable and every enrolled user would be locked out at
+once — with the only clue a startup log line from months earlier. An unavailable feature
+is recoverable; an unrotatable key is not.
 
 | | |
 |---|---|

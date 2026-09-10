@@ -2553,9 +2553,6 @@
       "name": "OIDC Clients"
     },
     {
-      "name": "Operations"
-    },
-    {
       "name": "Security"
     }
   ],
@@ -5049,46 +5046,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserInfoResponse"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/ops/memberships/overview": {
-      "get": {
-        "tags": [
-          "Operations"
-        ],
-        "operationId": "ops_get_membership_overview",
-        "description": "Membership distribution, aggregated in the database rather than by loading every row.",
-        "description_zh": "会员分布概览。聚合在数据库内完成，不会把每一行都载入内存。",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "x-required-permissions": [
-          "soulauth:users.read"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
                 }
               }
             }

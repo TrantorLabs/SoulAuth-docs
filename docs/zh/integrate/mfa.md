@@ -75,11 +75,14 @@ curl -X POST "$APP/api/auth/mfa/login-verify" \
 
 ## 运维上的一条硬要求
 
-TOTP 密钥在库里是加密存放的，加密密钥取自 `MFA_SECRET_ENCRYPTION_KEY`。
-不配置的话，它从 `JWT_SECRET` 派生，服务启动时会告警 —— 而那样一来，
-轮换 `JWT_SECRET` 会让所有已存密钥无法解密，全部已注册用户同时被挡在门外。
-在任何人注册之前就把它显式配好。告警由 `src/utils/crypto.rs` 打出；
-这一条没有自动化测试断言，所以本段不挂徽章。
+TOTP 密钥在库里是加密存放的，加密密钥取自 `MFA_SECRET_ENCRYPTION_KEY`，
+而且**不配这把密钥 MFA 就不工作** —— 所有 MFA 端点在密钥设好之前一律返回 503，
+错误消息里写明缺的是哪个变量。<Status kind="tested" guard="conformance::b5" />
+
+它不从任何别的密钥派生。从 `JWT_SECRET` 派生能让服务照常启动、让人照常注册，
+然后在轮换 `JWT_SECRET` 的那一天，所有已存密钥同时解不开、所有已注册用户同时
+被挡在门外 —— 而唯一的线索是几个月前的一行启动日志。功能不可用是可以恢复的，
+密钥不可轮换不行。
 
 | | |
 |---|---|

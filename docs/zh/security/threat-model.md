@@ -15,10 +15,11 @@
 他能做到的，只要有足够时间：离线爆破弱口令。Argon2 让这件事变贵，但不是不可能，
 口令策略仍然要紧。
 
-::: warning 除非他还拿到了 `JWT_SECRET`
-TOTP 密钥用 `MFA_SECRET_ENCRYPTION_KEY` 加密。如果那把密钥从未被显式设置，
-它**从 `JWT_SECRET` 派生**。于是一份数据库转储加上环境文件，就能算出可用的
-TOTP 验证码。非环回的 `APP_URL` 强制要求专用密钥，理由正在于此。
+::: warning 除非他还拿到了 `MFA_SECRET_ENCRYPTION_KEY`
+TOTP 密钥用这把密钥加密，它存在数据库之外，且从不从 `JWT_SECRET` 派生。
+<Status kind="tested" guard="conformance::b5" /> 单有一份数据库转储算不出可用的 TOTP
+验证码；转储**加上**环境文件就能 —— 所以这把密钥该放在密钥管理器里，而不是和备份
+放在同一个地方。
 :::
 
 ## 会话令牌被窃

@@ -15,10 +15,11 @@ follow from it, and none of them is a warning — the process **refuses to start
 - `OIDC_RSA_PRIVATE_KEY_PATH` (or `_PEM`) becomes required.
 - `MFA_SECRET_ENCRYPTION_KEY` becomes required.
 
-The last two have defaults that would silently destroy already-issued credentials if a
-real deployment ran on them: an ephemeral signing key invalidates every ID token on
-restart, and an MFA key derived from `JWT_SECRET` becomes undecryptable the day that
-secret is rotated. Neither shows up until it is already an incident.
+The last two are refused rather than defaulted, because a default would silently destroy
+already-issued credentials: an ephemeral signing key invalidates every ID token on
+restart, and there is no MFA key to fall back to — MFA is simply unavailable until one is
+set. Neither failure shows up until it is already an incident, which is why the process
+refuses to start instead.
 
 The [quickstart](/start/quickstart) uses `http://localhost:8080`, which is a loopback
 address, so it needs neither — and for the same reason its settings cannot be deployed

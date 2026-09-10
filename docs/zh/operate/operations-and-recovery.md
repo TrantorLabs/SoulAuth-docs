@@ -26,10 +26,12 @@ systemctl start soulauth
 
 轮换它会让所有会话失效，所有人被登出。这是预期代价，不是故障。
 
-::: danger 先轮换 MFA 密钥，否则别动
-如果 `MFA_SECRET_ENCRYPTION_KEY` 从未被显式设置，MFA 密钥是**从 `JWT_SECRET` 派生**
-的。此时轮换 `JWT_SECRET` 会把每个 MFA 用户永久锁死：他们存着的 TOTP 密钥再也
-解不开，除了让他们重新绑定之外没有任何恢复手段。
+::: tip MFA 密钥与这一把无关
+`MFA_SECRET_ENCRYPTION_KEY` 是独立的一把，从不从 `JWT_SECRET` 派生，所以轮换
+`JWT_SECRET` 不会碰到已存的 TOTP 密钥。<Status kind="tested" guard="conformance::b5" />
+
+真正有破坏性的是轮换 `MFA_SECRET_ENCRYPTION_KEY` 本身：库里已有的密钥是用旧钥匙
+封的，除了让已注册用户重新绑定之外没有恢复手段。
 
 在你动 `JWT_SECRET` 之前，先设一个专用的 `MFA_SECRET_ENCRYPTION_KEY`。
 非环回的 `APP_URL` 已经把它列为必填，就是为了防这一步。
@@ -104,7 +106,7 @@ curl -X DELETE $SOULAUTH/api/actors/$ACTOR_ID/credentials/$CREDENTIAL_ID \
 **数据库。** 会话、访问令牌、刷新令牌、授权码、重置与验证令牌全部以 SHA-256 指纹
 存储，所以读一次数据库拿不到任何可用凭证。
 <Status kind="tested" guard="conformance::b4b" /> 口令用 Argon2。TOTP 密钥是加密的，
-而所用的那把密钥若从未显式设置，则来自 `JWT_SECRET` 派生。
+所用的是一把专用密钥，从不从任何别的密钥派生。
 
 ## 自动清理
 

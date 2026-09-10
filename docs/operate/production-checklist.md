@@ -25,8 +25,8 @@ Set `APP_URL` to anything that is not loopback and both of these become mandator
 openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out oidc-signing.pem
 export OIDC_RSA_PRIVATE_KEY_PATH=/etc/soulauth/oidc-signing.pem
 
-# Dedicated MFA key — derived from JWT_SECRET otherwise, which means rotating
-# JWT_SECRET locks every MFA user out permanently.
+# Dedicated MFA key — MFA returns 503 without it, and it is never derived from
+# JWT_SECRET, so the two rotate independently.
 export MFA_SECRET_ENCRYPTION_KEY=$(openssl rand -base64 32)
 export AUDIT_INTEGRITY_KEY=$(openssl rand -base64 32)
 ```

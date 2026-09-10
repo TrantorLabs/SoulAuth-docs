@@ -48,17 +48,6 @@ Unlocking is idempotent: unlocking an account that is not locked returns `false`
 than erroring. Both lock and unlock are audited — recording only lockouts would leave a
 trail of events that never resolve.
 
-## Operations
-
-<!-- table-only: /api/ops/** — a single read-only aggregate for dashboards. Nothing to sequence. -->
-<ApiTable tag="Operations" />
-
-::: warning Membership does not belong on the identity root
-`membership_level` and `membership_expiry` hang off the legacy
-`user` row, and the overview endpoint hard-codes pricing tiers. Commercial state is not
-identity state.
-:::
-
 ## Next
 
 | | |
