@@ -46,14 +46,13 @@ Scope cannot escalate on refresh: the new scope must be a subset of the original
 
 ## What `sub` is stable across
 
-::: warning Weaker than the model describes
-`sub` currently carries the legacy `user` row key, not the
-identity root. It is therefore stable for the lifetime of that row — which is **weaker**
-than the "never reassigned" guarantee OIDC Core expects.
+::: tip As stable as the model describes
+`sub` is the identity root's `subject_key`. It is generated once, derived from nothing,
+and never reassigned — which is what OIDC Core expects of a subject identifier.
+<Status kind="tested" guard="conformance::c1" />
 
-If you need a subject identifier that survives an account being rebuilt, `sub` does not
-give it to you today. Recorded as a named caveat in
-[standards & conformance](/security/standards-and-conformance).
+It survives an account being rebuilt: the account row is an extension of the identity,
+not the identity itself.
 :::
 
 Two things `sub` is definitely not:

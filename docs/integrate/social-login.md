@@ -58,8 +58,17 @@ account, no link. Accepting it would let anyone put an unverified address they d
 into their provider profile and take over the matching local account.
 <Status kind="tested" guard="integration.sh" />
 
-**Email matches an existing local account.** The provider identity is linked to that
-account. You get one account with two ways in, not two accounts.
+**Email matches an existing local account.** Rejected with `403`, and nothing is written.
+
+A verified email address in two identity domains proves each domain considers it
+reachable. It does not prove the two subjects are the same person: addresses get recycled,
+transferred with a job, and corporate domains change hands. Linking on that basis would let
+whoever can register a matching address reach an existing account.
+
+To add a provider to an account you already have, sign in to it first and link
+explicitly — the actor authenticates, the provider authenticates, and the binding is
+created once both are established.
+<Status kind="tested" guard="conformance::a4" />
 
 ## Key users on the pair, not on the subject
 

@@ -12,6 +12,10 @@ valid session token.
 A display name, avatar or locale changing does not change who the actor is. That is why
 these live in their own objects rather than on the identity root —
 [actor identity model](/concepts/actor-identity-model).
+
+A profile carries `actor_identity_id`: it *references* the identity root rather than
+reusing its primary key, and the name says so.
+<Status kind="tested" guard="conformance::h2" />
 :::
 
 ## AI actors

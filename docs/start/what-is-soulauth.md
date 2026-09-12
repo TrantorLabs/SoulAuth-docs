@@ -31,7 +31,9 @@ to be expressed through a token, and attributable in the audit trail.
 **Actor Identity is the identity root; a credential is how a subject proves itself.**
 A human can use a password, MFA or an external identity; an AIActor uses a key-based
 credential suited to a machine subject. The paths converge on one Authentication Core
-and produce a standardised Authenticated Identity / Claims.
+and produce a standardised Authenticated Identity / Claims — one result type carrying the
+identity root, the kind of actor and the class of credential that was verified, rather
+than one shape per kind of subject. <Status kind="tested" guard="conformance::b3" />
 
 SoulAuth proves who an Actor is. It does not grant that Actor any power to act just
 because authentication succeeded. In a Soulseed environment the AIActor itself is

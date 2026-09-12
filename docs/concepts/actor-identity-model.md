@@ -56,13 +56,20 @@ separation is the reason an AI agent can exist without any of these fields —
 
 ### Credential — what can prove the actor right now
 
-For AI actors this is a real, separate table: `ai_actor_credential`, holding
-`public_key`, `algorithm`, `label`, `status`, `last_used_at`. SoulAuth stores only public
-keys there, so reading that table grants nobody the ability to impersonate anyone.
+Credentials are their own objects, keyed to the identity root rather than to an account
+row. A password lives in `credential` with `status`, `rotated_at` and `revoked_at`;
+rotation updates that row and records when, so "the current password" has exactly one
+answer. AI actor keys live in `ai_actor_credential` with `public_key`, `algorithm`,
+`label`, `status`, `last_used_at` — one identity holds many, each revoked on its own.
+SoulAuth stores only public keys there, so reading that table grants nobody the ability
+to impersonate anyone.
 
 **An identity outlives any credential it holds.** Rotating a key, losing a key, revoking
-a key: none of these produce a new actor, so audit rows written under the old key still
-resolve to the same one.
+a key, revoking a password: none of these produce a new actor, so audit rows written
+under the old credential still resolve to the same one. Revoking is a change of state
+rather than a deletion, because "revoked" and "never set" are different facts and a
+cleared field cannot tell them apart.
+<Status kind="tested" guard="conformance::b2" />
 
 ### IdentityBinding — which external subject is the same actor
 
@@ -97,7 +104,16 @@ That is why `retired` does not delete the row: the row stays, so the
 value could later be assigned to someone else, at which point a subject in an old audit
 row means two different actors at two different times.
 
-::: warning No endpoint sets an actor to `retired` today
+::: tip AI actors have a lifecycle endpoint
+`PUT /api/actors/{actor_id}/status` takes `active`, `suspended` or `retired`. The first two
+are reversible; `retired` is not, and either of the latter two immediately ends every
+session that actor holds. <Status kind="tested" guard="conformance::j22" />
+
+Human actors still go through account status, and the mapping stays conservative for the
+reason below.
+:::
+
+::: warning No endpoint sets a *human* actor to `retired`
 `PUT /api/users/{user_id}/status` takes an account status
 (`Active` / `Inactive` / `Suspended` / `Deleted`) and does sync the identity root, but the
 mapping is `Active → active` and **everything else to `suspended`**.
@@ -108,12 +124,15 @@ the transition does not treat them as equivalent. `retired` can therefore only b
 by internal code; there is no way to reach it by following this documentation.
 :::
 
-::: warning What `sub` is stable across, today
-The OIDC `sub` currently carries the legacy `user` row key,
-not the identity root. So it is stable for the lifetime of that row — weaker than the
-"never reassigned" guarantee the model describes. If you need a subject identifier
-that survives account rebuilds, `sub` does not give it to you yet. Recorded in the
-[standards registry](/security/standards-and-conformance) as a named caveat.
+::: tip What `sub` is stable across
+The OIDC `sub` is the identity root's `subject_key` — a value generated once and never
+derived from any account attribute. Changing an email or username, rotating a credential,
+adding or removing MFA, arriving through a different client: none of them change it, and
+it is the same subject across clients.
+<Status kind="tested" guard="conformance::c1" />
+
+A retired subject is never reused, so a `sub` you recorded keeps pointing at the same
+actor for as long as your records matter.
 :::
 
 ## Standalone and Soulseed

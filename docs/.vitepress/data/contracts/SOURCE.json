@@ -1,8 +1,8 @@
 {
   "repo": "SoulAuth",
-  "commit": "888aa28b635036d39a53172bfa77578c2177745e",
-  "short": "888aa28",
-  "branch": "main",
-  "committedAt": "2026-09-10T10:25:06+08:00",
+  "commit": "31287ae2087db4f43914e1b130414786eb7f65c4",
+  "short": "31287ae",
+  "branch": "actor-native-authentication",
+  "committedAt": "2026-09-12T14:45:56+08:00",
   "dirty": false
 }

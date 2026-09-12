@@ -113,9 +113,9 @@ curl $SOULAUTH/api/oidc/userinfo -H "Authorization: Bearer $ACCESS_TOKEN"
 
 也绝不要键在邮箱上。邮箱会易主。
 
-::: warning `sub` 到底有多稳定
-它带的是遗留 user 行的键，所以是在那一行的生命周期内稳定，
-而不是永久不可重新分配。[完整 caveat](/zh/security/standards-and-conformance)。
+::: tip `sub` 到底有多稳定
+它是身份根的 `subject_key`：生成一次、不从任何东西派生、绝不重新分配。
+<Status kind="tested" guard="conformance::c1" />
 :::
 
 ## 关于吊销

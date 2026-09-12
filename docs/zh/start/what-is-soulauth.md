@@ -27,7 +27,8 @@ Human 与 AIActor 的「一等身份法位」并不意味着二者拥有相同�
 **Actor Identity 是身份根，Credential 是证明主体的方式。** Human 可以使用 Password、
 MFA 或外部身份，AIActor 可以使用适合机器主体的 Key-based Credential；
 不同认证路径最终进入同一个 Authentication Core，并输出标准化的
-Authenticated Identity / Claims。
+Authenticated Identity / Claims：同一个结果类型，带着身份根、主体类别与本次验证的
+凭证类别，而不是每类主体一种形状。<Status kind="tested" guard="conformance::b3" />
 
 SoulAuth 负责证明一个 Actor 是谁，但不会因为认证成功就自动赋予它行动权力。
 在 Soulseed 环境中，AIActor 的本体由 SoulseedAGI 定义，SoulAuth 通过受控的

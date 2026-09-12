@@ -10,6 +10,9 @@
 ::: tip 档案不是身份
 显示名、头像、语言偏好变了，不改变这个主体是谁。所以它们住在自己的对象里，
 而不是挂在身份根上——[Actor 身份模型](/zh/concepts/actor-identity-model)。
+
+档案带的字段是 `actor_identity_id`：它**引用**身份根，不复用身份根的主键，
+而且名字如实说明了这一点。<Status kind="tested" guard="conformance::h2" />
 :::
 
 ## AI 主体

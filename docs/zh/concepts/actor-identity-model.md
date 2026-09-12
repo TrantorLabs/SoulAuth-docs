@@ -51,12 +51,16 @@
 
 ### Credential：此刻能用什么证明这个主体
 
-对 AI 主体而言，这是一张真实存在的独立表：`ai_actor_credential`，存
-`public_key`、`algorithm`、`label`、`status`、`last_used_at`。SoulAuth 在那里
-只存公钥，所以这张表就算被读走，也冒充不了谁。
+凭证是自己的对象，挂在身份根上，不挂在账户行上。口令住在 `credential` 里，
+带 `status`、`rotated_at`、`revoked_at`；轮换是更新那一行并记下时刻，于是
+「当前的口令是哪一把」只有一个答案。AI 主体的密钥住在 `ai_actor_credential`，
+存 `public_key`、`algorithm`、`label`、`status`、`last_used_at`：一个身份挂多把，
+各自独立吊销。SoulAuth 在那里只存公钥，所以这张表就算被读走，也冒充不了谁。
 
-**身份比它持有的任何一份凭证活得久。** 轮换密钥、丢失密钥、吊销密钥，
-都不产生新的主体，所以旧密钥时期写下的审计行，解析出来仍然是同一个。
+**身份比它持有的任何一份凭证活得久。** 轮换密钥、丢失密钥、吊销密钥、吊销口令，
+都不产生新的主体，所以旧凭证时期写下的审计行，解析出来仍然是同一个。吊销是改状态
+而不是删除，因为「吊销过」与「从未设过」是两个不同的事实，而一个被清空的字段分不出
+它们。<Status kind="tested" guard="conformance::b2" />
 
 ### IdentityBinding：外部哪个主体与它是同一个
 
@@ -88,7 +92,15 @@
 占着那个 `subject_key`。删了的话，同一个值以后可能被分配给另一个人，而历史审计行
 里的 subject 就会在不同时间指向不同的人。
 
-::: warning 当前没有把主体设成 `retired` 的对外端点
+::: tip AIActor 的生命周期有对外端点
+`PUT /api/actors/{actor_id}/status` 收 `active` / `suspended` / `retired`：前者可逆，
+`retired` 不可回头，而且两者都会立刻结束该主体的全部会话。
+<Status kind="tested" guard="conformance::j22" />
+
+Human 那一侧仍然经由账号状态同步，映射保守，原因如下。
+:::
+
+::: warning Human 侧没有直接把身份根设成 `retired` 的端点
 `PUT /api/users/{user_id}/status` 收的是账号状态
 （`Active` / `Inactive` / `Suspended` / `Deleted`），它会同步身份根，但映射是
 `Active → active`、**其余一律 `suspended`**。
@@ -98,11 +110,13 @@
 只能由内部代码写入，照文档做不到。
 :::
 
-::: warning 今天的 `sub` 到底对什么稳定
-OIDC 的 `sub` 目前带的是遗留 `user` 行的键，不是身份根。
-因此它只在那一行的生命周期内稳定，弱于模型描述的「永不重新分配」。如果需要一个
-能挺过账号重建的 subject 标识，`sub` 现在给不了你。这一条作为具名 caveat 记在
-[规范注册表](/zh/security/standards-and-conformance)里。
+::: tip `sub` 对什么稳定
+OIDC 的 `sub` 就是身份根的 `subject_key`：生成一次，不从任何账户属性派生。改邮箱、
+改用户名、轮换凭证、增删 MFA、经由不同 Client 进入，都不改变它，而且同一个主体经
+两个 Client 拿到的是同一个值。<Status kind="tested" guard="conformance::c1" />
+
+退役的 subject 不得复用，所以你记下来的那个 `sub`，在你的记录还有意义的期间里
+一直指向同一个主体。
 :::
 
 ## Standalone 与 Soulseed

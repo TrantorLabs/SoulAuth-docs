@@ -12,7 +12,13 @@ Two rules the writer holds to:
   flushed during shutdown. The user's operation never waits on the audit write, and a
   normal restart does not cost you queued events.
 - **It never records credentials.** Only the action, category, status, IP, user agent
-  and a small set of non-sensitive context fields.
+  and a small set of non-sensitive context fields. For an authentication event those
+  fields name the identity root that was authenticated, whether it is a human or an AI
+  actor, and which class of credential was verified: a password, a TOTP code, a one-time
+  backup code, an external identity, a mail link, or an Ed25519 key. A key or an external
+  provider also records its label, so a log over several machines shows which key
+  authenticated. Spending a backup code and passing a TOTP check are not the same event,
+  and the log distinguishes them.
 - **It is tamper-evident.** Each row is chained to the previous one by hash, and the
   chain head is signed hourly with a key held outside the database. `GET
   /api/audit/integrity` re-derives the chain and verifies the checkpoints, reporting the

@@ -41,12 +41,12 @@ resource owner password credentials 也都没有。
 
 ## `sub` 到底对什么稳定
 
-::: warning 弱于模型所描述的
-`sub` 目前带的是遗留 `user` 行的键，不是身份根。
-因此它只在那一行的生命周期内稳定，**弱于** OIDC Core 期待的「永不重新分配」。
+::: tip 与模型描述的一致
+`sub` 就是身份根的 `subject_key`：生成一次、不从任何东西派生、绝不重新分配 ——
+这正是 OIDC Core 对 subject 标识的要求。
+<Status kind="tested" guard="conformance::c1" />
 
-如果你需要一个能挺过账号重建的 subject 标识，`sub` 今天给不了你。
-这一条作为具名 caveat 记在[规范与符合性](/zh/security/standards-and-conformance)里。
+它能挺过账号重建：账户行是身份的扩展，不是身份本身。
 :::
 
 两件 `sub` 明确不是的事：
