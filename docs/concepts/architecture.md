@@ -1,7 +1,7 @@
 # Architecture
 
 One Rust binary and one database. The source is split by responsibility into
-`src/routes/`, `src/models/` and `src/services/`, and five invariants across that split
+`src/routes/`, `src/models/` and `src/services/`, and six invariants across that split
 have tests, listed below.
 
 ## The shape
@@ -21,6 +21,7 @@ These are enforced, not aspirational. Each names the test that keeps it true.
 | One error shape across the whole API: a stable machine code plus a human message, never a bare status with an empty body | <Status kind="tested" guard="conformance::j6" /> |
 | The AI actor path never touches human account structures | <Status kind="tested" guard="conformance::a6" /> |
 | Every endpoint, config key and permission name in the published contract exists in the running code — and nothing in the running code is missing from it | <Status kind="tested" guard="conformance::j4" /> |
+| Each logical store — identity root and its attachments, credentials, sessions, the audit chain, checkpoints — is written only by its declared owner, and every declared owner writes | <Status kind="tested" guard="conformance::g1" /> |
 | The service cannot alter its own schema | schema import is an operator step |
 
 That last one has no test because there is nothing to assert against: SoulAuth issues no

@@ -1,7 +1,7 @@
 # 架构
 
 一个 Rust 二进制加一个数据库。源码按职责分成 `src/routes/`、`src/models/`、
-`src/services/` 三层，其中五条不变式由测试守着，列在下面。
+`src/services/` 三层，其中六条不变式由测试守着，列在下面。
 
 ## 整体形状
 
@@ -20,6 +20,7 @@
 | 全 API 只有一种错误形状：稳定机器码加人话，绝不出现空体的裸状态码 | <Status kind="tested" guard="conformance::j6" /> |
 | AI 主体路径完全不碰人类账户结构 | <Status kind="tested" guard="conformance::a6" /> |
 | 已发布契约里的每个端点、配置项、权限名都在运行代码中存在；反过来，运行代码里也没有契约遗漏的 | <Status kind="tested" guard="conformance::j4" /> |
+| 每个逻辑存储——身份根及其附属、凭证、会话、审计链、检查点——只由声明的所有方写入，且每个声明的所有方都确实在写 | <Status kind="tested" guard="conformance::g1" /> |
 | 服务无法修改自己的表结构 | schema 导入是运维步骤 |
 
 最后一条没有对应测试，因为没有可断言的对象：SoulAuth 根本不发出 DDL。两个 SQL
