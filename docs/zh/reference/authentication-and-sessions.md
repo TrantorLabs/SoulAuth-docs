@@ -31,6 +31,34 @@
 单实例部署不受影响。
 :::
 
+## 会话知道自己是怎样被认证的
+
+会话行记的不只是「谁、什么时候」，还保存着建立它的那份**认证事实**：当时成立的方法
+（MFA 登录是 `password` **和** `totp`，不是一次「totp 登录」）、认证时刻、以及所涉本地凭证的
+稳定引用。需要「事实」而不是「令牌」的依赖方，用会话自己的 bearer 从 `GET /api/auth/introspect`
+读取：
+
+```json
+{
+  "authentication": {
+    "actor_identity_id": "actor_identity:…",
+    "actor_kind": "ai_actor",
+    "methods": ["ed25519_key"],
+    "authenticated_at": 1789958099,
+    "credential_refs": ["ai_actor_credential:…"]
+  },
+  "session": { "id": "…", "created_at": 1789958099, "expires_at": 1790044499 }
+}
+```
+
+人类令牌与 AIActor 令牌都接受，各走各的身份根闸门。令牌本身永不返回；这是持有者对**自己**的
+自省，不是 RFC 7662 那种代查任意令牌的 introspection。字段与 `login_success` 审计事件记录的
+完全一致，审计里写的和依赖方拿到的是同一个对象。联邦登录与邮件链接会话的 `credential_refs`
+为空：它们没有本地凭证，端点不会编一个出来。
+
+第一个消费方是把授权挂在主体而不是令牌上的治理层。为什么这个区别重要，见
+[AI 原生身份](/zh/concepts/ai-native-identity)。
+
 ## 认证端点
 
 <ApiTable tag="Authentication" />

@@ -34,6 +34,38 @@ instances observe it within `AUTH_SESSION_CACHE_TTL_SECONDS`. Single-instance
 deployments are unaffected.
 :::
 
+## What a session knows about its own authentication
+
+A session row records more than who and when: it keeps the **authentication fact** that
+established it — the methods that held (an MFA login is `password` *and* `totp`, not a
+single "totp login"), the moment of authentication, and the stable references of the local
+credentials involved. A relying party that needs that fact rather than the token reads it
+from `GET /api/auth/introspect` with the session's own bearer:
+
+```json
+{
+  "authentication": {
+    "actor_identity_id": "actor_identity:…",
+    "actor_kind": "ai_actor",
+    "methods": ["ed25519_key"],
+    "authenticated_at": 1789958099,
+    "credential_refs": ["ai_actor_credential:…"]
+  },
+  "session": { "id": "…", "created_at": 1789958099, "expires_at": 1790044499 }
+}
+```
+
+Human and AI-actor tokens are both accepted, each through its own identity-root gate. The
+token itself is never returned, and this is the bearer describing *itself* — not RFC 7662
+introspection of arbitrary tokens. The fields are exactly the ones the `login_success`
+audit event records, so what the audit trail says and what a relying party is told are one
+object. `credential_refs` is empty for federated and email-link sessions: those have no
+local credential, and the endpoint does not invent one.
+
+The first consumer is a governance layer that keys authority on the actor, not on the
+token — see [AI-native identity](/concepts/ai-native-identity) for why that distinction
+matters.
+
 ## Endpoints
 
 <ApiTable tag="Authentication" />
